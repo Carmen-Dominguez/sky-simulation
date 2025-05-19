@@ -6,10 +6,31 @@
   <title>Three.js Sky and Clouds Simulation</title>
   <style>
     body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
+    canvas { display: block; background: transparent !important; }
   </style>
 </head>
 <body>
+  <div id="sky-gradient" style="
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    transition: background 1s;
+  "></div>
+  <button id="time-btn" style="
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.8);
+    color: #222;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  ">Change Time</button>
   <script type="module">
     import * as THREE from './three.module.js';
     import { OrbitControls } from './OrbitControls.js';
@@ -29,15 +50,67 @@
     camera.position.set(0, 0, 50);
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+    // Ensure canvas is above the gradient
+    renderer.domElement.style.position = 'relative';
+    renderer.domElement.style.zIndex = 1;
 
     // Initialize components
     const sky = new Sky(scene);
     const cloudSystem = new CloudSystem(scene);
 
     const controls = new OrbitControls(camera, renderer.domElement);
+
+    // --- Starfield setup ---
+    let stars;
+    function createStars() {
+      const starCount = 400;
+      const geometry = new THREE.BufferGeometry();
+      const positions = [];
+      for (let i = 0; i < starCount; i++) {
+        // Place stars in a sphere around the camera
+        const r = 200 + Math.random() * 200;
+        const theta = Math.random() * 2 * Math.PI;
+        const phi = Math.acos(2 * Math.random() - 1);
+        positions.push(
+          r * Math.sin(phi) * Math.cos(theta),
+          r * Math.sin(phi) * Math.sin(theta),
+          r * Math.cos(phi)
+        );
+      }
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, sizeAttenuation: true });
+      stars = new THREE.Points(geometry, material);
+      stars.visible = false;
+      scene.add(stars);
+    }
+    createStars();
+
+    // Time-of-day logic with gradients
+    const times = ['day', 'dusk', 'night', 'dawn'];
+    let currentTimeIndex = 0;
+    const gradients = {
+      day: "linear-gradient(to top, #a1cae0, #478bbe, #1d68aa)",
+      dusk: "linear-gradient(0deg, #46466c 0%, #bd4f77 50%, #f2b080 100%)",
+      night: "linear-gradient(to top, #283e51, #00001c)",
+      dawn: "linear-gradient(0deg, #f2b080 0%, #bd4f77 50%, #46466c 100%)"
+    };
+
+    function updateSky() {
+      const time = times[currentTimeIndex];
+      document.getElementById('sky-gradient').style.background = gradients[time];
+      if (stars) stars.visible = (time === 'night');
+      // Optionally, still update the Three.js sky color for lighting consistency:
+      // sky.sky.material.color.setHex(skyColors[time]);
+    }
+    document.getElementById('time-btn').addEventListener('click', () => {
+      currentTimeIndex = (currentTimeIndex + 1) % times.length;
+      updateSky();
+    });
+    updateSky();
 
     // Animation loop
     function animate() {
