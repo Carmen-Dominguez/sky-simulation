@@ -46,6 +46,14 @@ class CloudSystem {
             });
         });
     }
+
+    setCloudDensity(percent) {
+        // Show/hide clouds based on percent (0-100)
+        const visibleCount = Math.round(this.clouds.children.length * percent / 100);
+        this.clouds.children.forEach((cloud, i) => {
+            cloud.visible = i < visibleCount;
+        });
+    }
 }
 
 export default CloudSystem; 

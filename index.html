@@ -31,11 +31,13 @@
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   ">Change Time</button>
+
   <script type="module">
     import * as THREE from './three.module.js';
     import { OrbitControls } from './OrbitControls.js';
     import Sky from './components/Sky.js';
     import CloudSystem from './components/CloudSystem.js';
+    import WeatherDisplay from './components/WeatherDisplay.js';
 
     // Scene setup
     const scene = new THREE.Scene();
@@ -61,6 +63,7 @@
     // Initialize components
     const sky = new Sky(scene);
     const cloudSystem = new CloudSystem(scene);
+    const weatherDisplay = new WeatherDisplay();
 
     const controls = new OrbitControls(camera, renderer.domElement);
 
@@ -127,6 +130,8 @@
       if (stars) stars.visible = (time === 'night');
       // Update cloud color/opacity per layer
       cloudSystem.setCloudColorLayered(cloudLayerColors[time]);
+      // Set weather display text color for night mode
+      weatherDisplay.setNightMode(time === 'night');
       // Optionally, still update the Three.js sky color for lighting consistency:
       // sky.sky.material.color.setHex(skyColors[time]);
     }
@@ -135,6 +140,47 @@
       updateSky();
     });
     updateSky();
+
+    // Fetch weather data and apply to scene
+    async function fetchWeather() {
+      try {
+        const res = await fetch('http://localhost:5173/weather');
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        console.error('Weather fetch error:', e);
+        return null;
+      }
+    }
+
+    function applyWeather(weather) {
+      console.log(weather);
+      if (!weather) return;
+      // 1. Set time of day
+      const now = Math.floor(Date.now() / 1000); // current time in seconds
+
+      const { sunrise, sunset } = weather.sys;
+      let timeOfDay = 'day';
+
+      if (now < sunrise + 3600) timeOfDay = 'dawn';
+      else if (now > sunset - 3600 && now < sunset) timeOfDay = 'dusk';
+      else if (now < sunrise || now > sunset) timeOfDay = 'night';
+      else timeOfDay = 'day';
+
+      currentTimeIndex = times.indexOf(timeOfDay);
+      updateSky();
+      // 2. Set cloud density
+      const cloudiness = weather.clouds.all; // 0-100
+      cloudSystem.setCloudDensity(cloudiness);
+      // 3. (Optional) Map weather type to other effects
+      // e.g., if (weather.weather[0].main === 'Rain') { ... }
+
+      // 4. Show weather info
+      weatherDisplay.update(weather);
+    }
+
+    // Call after scene setup
+    fetchWeather().then(applyWeather);
 
     // Animation loop
     function animate() {
