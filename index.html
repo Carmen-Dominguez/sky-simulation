@@ -98,11 +98,20 @@
       night: "linear-gradient(to top, #283e51, #00001c)",
       dawn: "linear-gradient(0deg, #f2b080 0%, #bd4f77 50%, #46466c 100%)"
     };
+    const cloudColors = {
+      day:    { color: 0xffffff, opacity: 0.8 },
+      dusk:   { color: 0xe5987e, opacity: 0.5 },
+      night:  { color: 0xadf4f8, opacity: 0.9 },
+      dawn:   { color: 0xe5987e, opacity: 0.8 }
+    };
 
     function updateSky() {
       const time = times[currentTimeIndex];
       document.getElementById('sky-gradient').style.background = gradients[time];
       if (stars) stars.visible = (time === 'night');
+      // Update cloud color/opacity
+      const { color, opacity } = cloudColors[time];
+      cloudSystem.setCloudColor(color, opacity);
       // Optionally, still update the Three.js sky color for lighting consistency:
       // sky.sky.material.color.setHex(skyColors[time]);
     }

@@ -26,6 +26,15 @@ class CloudSystem {
         this.clouds.rotation.y += 0.0005;
         this.clouds.rotation.x += 0.0002;
     }
+
+    setCloudColor(color, opacity) {
+        this.clouds.children.forEach(cloudGroup => {
+            cloudGroup.children.forEach(sphere => {
+                sphere.material.color.setHex(color);
+                sphere.material.opacity = opacity;
+            });
+        });
+    }
 }
 
 export default CloudSystem; 
