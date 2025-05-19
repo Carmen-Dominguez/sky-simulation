@@ -35,6 +35,17 @@ class CloudSystem {
             });
         });
     }
+
+    setCloudColorLayered(layerColors) {
+        this.clouds.children.forEach(cloudGroup => {
+            cloudGroup.children.forEach(sphere => {
+                const layer = sphere.userData.layer || 'back';
+                const { color, opacity } = layerColors[layer];
+                sphere.material.color.setHex(color);
+                sphere.material.opacity = opacity;
+            });
+        });
+    }
 }
 
 export default CloudSystem; 
