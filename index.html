@@ -10,8 +10,9 @@
   </style>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
   <script type="module">
+    import * as THREE from './three.module.js';
+    import { OrbitControls } from './OrbitControls.js';
     import Sky from './components/Sky.js';
     import CloudSystem from './components/CloudSystem.js';
 
@@ -36,10 +37,13 @@
     const sky = new Sky(scene);
     const cloudSystem = new CloudSystem(scene);
 
+    const controls = new OrbitControls(camera, renderer.domElement);
+
     // Animation loop
     function animate() {
       requestAnimationFrame(animate);
       cloudSystem.update();
+      controls.update();
       renderer.render(scene, camera);
     }
     animate();

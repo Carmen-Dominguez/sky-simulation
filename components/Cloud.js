@@ -1,3 +1,5 @@
+import * as THREE from '../three.module.js';
+
 class Cloud {
     constructor() {
         this.cloudGroup = new THREE.Group();

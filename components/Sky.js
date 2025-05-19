@@ -1,3 +1,5 @@
+import * as THREE from '../three.module.js';
+
 class Sky {
     constructor(scene) {
         this.scene = scene;

@@ -1,3 +1,4 @@
+import * as THREE from '../three.module.js';
 import Cloud from './Cloud.js';
 
 class CloudSystem {
