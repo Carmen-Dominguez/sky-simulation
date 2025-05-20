@@ -17,7 +17,7 @@ class Cloud {
         });
 
         const layers = ['back', 'mid', 'front'];
-        const sphereCount = 10 + Math.floor(Math.random() * 6); // 10-15 spheres per cloud
+        const sphereCount = 15 + Math.floor(Math.random() * 6); // 10-15 spheres per cloud
 
         for (let j = 0; j < sphereCount; j++) {
             const sphere = new THREE.Mesh(cloudGeometry, material.clone());
