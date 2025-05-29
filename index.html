@@ -38,6 +38,7 @@
     import Sky from './components/Sky.js';
     import CloudSystem from './components/CloudSystem.js';
     import WeatherDisplay from './components/WeatherDisplay.js';
+    import RainSystem from './components/RainSystem.js';
 
     // Scene setup
     const scene = new THREE.Scene();
@@ -64,6 +65,7 @@
     const sky = new Sky(scene);
     const cloudSystem = new CloudSystem(scene);
     const weatherDisplay = new WeatherDisplay();
+    const rainSystem = new RainSystem(scene);
 
     // Add lighting for clouds
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -142,14 +144,12 @@
     function updateSky() {
       const time = times[currentTimeIndex];
       // Use grey gradient if very cloudy
-      const useGrey = currentCloudiness >= 80;
+      const useGrey = currentCloudiness >= 70;
       const gradient = useGrey ? greyGradients[time] : gradients[time];
       document.getElementById('sky-gradient').style.background = gradient;
       if (stars) stars.visible = (time === 'night');
       cloudSystem.setCloudColorLayered(cloudLayerColors[time]);
       weatherDisplay.setNightMode(time === 'night');
-      // Optionally, still update the Three.js sky color for lighting consistency:
-      // sky.sky.material.color.setHex(skyColors[time]);
     }
     document.getElementById('time-btn').addEventListener('click', () => {
       currentTimeIndex = (currentTimeIndex + 1) % times.length;
@@ -170,7 +170,7 @@
     }
 
     function applyWeather(weather) {
-      console.log(weather);
+      console.log('Weather data:', weather);
       if (!weather) return;
       // 1. Set time of day
       const now = Math.floor(Date.now() / 1000); // current time in seconds
@@ -184,16 +184,21 @@
       else timeOfDay = 'day';
 
       currentTimeIndex = times.indexOf(timeOfDay);
-      updateSky();
+      
       // 2. Set cloud density
-      const cloudiness = weather.clouds.all; // 0-100
+      const cloudiness = weather.clouds?.all || 0; // Safely access cloud coverage
       currentCloudiness = cloudiness;
       cloudSystem.setCloudDensity(cloudiness);
-      // 3. (Optional) Map weather type to other effects
-      // e.g., if (weather.weather[0].main === 'Rain') { ... }
+
+      // 3. Set rain intensity based on weather condition
+      const rainIntensity = weather.rain ? weather.rain['1h'] || weather.rain['3h'] || 0 : 0;
+      rainSystem.setRainIntensity(rainIntensity);
 
       // 4. Show weather info
       weatherDisplay.update(weather);
+
+      // 5. Update sky after all weather parameters are set
+      updateSky();
     }
 
     // Call after scene setup
@@ -203,6 +208,7 @@
     function animate() {
       requestAnimationFrame(animate);
       cloudSystem.update();
+      rainSystem.update();
       controls.update();
       renderer.render(scene, camera);
     }
