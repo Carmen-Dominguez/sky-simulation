@@ -7,6 +7,7 @@ class CloudSystem {
         this.clouds = new THREE.Group();
         this.scene.add(this.clouds);
         this.createClouds();
+        this.cloudSpeed = 0.0005; // default speed
     }
 
     createClouds() {
@@ -22,9 +23,15 @@ class CloudSystem {
         }
     }
 
+    setCloudSpeedFromWind(windSpeed) {
+        // Map wind speed (m/s) to a reasonable rotation speed
+        // You can tweak the multiplier for realism
+        this.cloudSpeed = 0.0001 + (windSpeed || 0) * 0.0001;
+    }
+
     update() {
-        this.clouds.rotation.y += 0.0005;
-        this.clouds.rotation.x += 0.0002;
+        this.clouds.rotation.y += this.cloudSpeed;
+        this.clouds.rotation.x += this.cloudSpeed * 0.4;
     }
 
     setCloudColor(color, opacity) {

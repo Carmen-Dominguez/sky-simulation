@@ -12,6 +12,7 @@ export default class WeatherDisplay {
       this.container.style.color = '#222';
       this.container.style.padding = '16px 24px';
       this.container.style.borderRadius = '16px';
+      this.container.style.fontFamily = 'Merriweather, serif';
       this.container.style.fontSize = '1.1rem';
       this.container.style.boxShadow = '0 4px 24px rgba(0,0,0,0.12)';
       this.container.style.minWidth = '220px';

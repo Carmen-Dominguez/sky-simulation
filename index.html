@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Three.js Sky and Clouds Simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; font-family: 'Merriweather', serif; }
     canvas { display: block; background: transparent !important; }
   </style>
 </head>
@@ -18,12 +21,12 @@
     transition: background 1s;
   "></div>
   <select id="city-select" style="position: fixed; top: 20px; left: 20px; z-index: 20; padding: 10px; border-radius: 8px; font-size: 1rem;">
-    <option value="london" data-lat="51.50853" data-lon="-0.12574">London 51.50853, -0.12574</option>
-    <option value="capeTown" data-lat="-33.92584" data-lon="18.42322">Cape Town -33.92584, 18.42322</option>
-    <option value="upington" data-lat="-28.4478" data-lon="21.2561">Upington -28.4478, 21.2561</option>
-    <option value="newYork" data-lat="40.712776" data-lon="-74.005974">New York 40.712776, -74.005974</option>
-    <option value="singapore" data-lat="1.3521" data-lon="103.8198">Singapore 1.3521, 103.8198</option>
-    <option value="tokyo" data-lat="35.6895" data-lon="139.6917">Tokyo 35.6895, 139.6917</option>
+    <option value="london" data-lat="51.50853" data-lon="-0.12574">London</option>
+    <option value="capeTown" data-lat="-33.92584" data-lon="18.42322">Cape Town</option>
+    <option value="upington" data-lat="-28.4478" data-lon="21.2561">Upington</option>
+    <option value="newYork" data-lat="40.712776" data-lon="-74.005974">New York</option>
+    <option value="singapore" data-lat="1.3521" data-lon="103.8198">Singapore</option>
+    <option value="tokyo" data-lat="35.6895" data-lon="139.6917">Tokyo</option>
   </select>
   <div style="
     position: fixed;
@@ -229,7 +232,6 @@
 
     // --- New function for lat/lon ---
     async function fetchWeatherWithCoordinates(lat, lon) {
-      console.log('Fetching weather for:', lat, lon);
       try {
         const url = lat && lon
           ? `http://localhost:5173/weatherLatLon?lat=${lat}&lon=${lon}`
@@ -256,7 +258,6 @@
     }
 
     function applyWeather(weather) {
-      console.log('Weather data:', weather);
       if (!weather) return;
       // 1. Set time of day
       const now = Math.floor(Date.now() / 1000); // current time in seconds
@@ -291,6 +292,8 @@
 
       // 5. Update sky after all weather parameters are set
       updateSky();
+
+      cloudSystem.setCloudSpeedFromWind(weather.wind?.speed);
     }
 
     // On page load, fetch weather for the default city
