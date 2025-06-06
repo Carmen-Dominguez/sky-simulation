@@ -17,6 +17,14 @@
     pointer-events: none;
     transition: background 1s;
   "></div>
+  <select id="city-select" style="position: fixed; top: 20px; left: 20px; z-index: 20; padding: 10px; border-radius: 8px; font-size: 1rem;">
+    <option value="london" data-lat="51.50853" data-lon="-0.12574">London 51.50853, -0.12574</option>
+    <option value="capeTown" data-lat="-33.92584" data-lon="18.42322">Cape Town -33.92584, 18.42322</option>
+    <option value="upington" data-lat="-28.4478" data-lon="21.2561">Upington -28.4478, 21.2561</option>
+    <option value="newYork" data-lat="40.712776" data-lon="-74.005974">New York 40.712776, -74.005974</option>
+    <option value="singapore" data-lat="1.3521" data-lon="103.8198">Singapore 1.3521, 103.8198</option>
+    <option value="tokyo" data-lat="35.6895" data-lon="139.6917">Tokyo 35.6895, 139.6917</option>
+  </select>
   <div style="
     position: fixed;
     bottom: 20px;
@@ -207,7 +215,35 @@
       document.getElementById('rain-btn').textContent = `Rain: ${rainIntensity}mm`;
     });
 
-    // Fetch weather data and apply to scene
+    // --- City selection logic ---
+    const citySelect = document.getElementById('city-select');
+    let selectedLat = citySelect.options[citySelect.selectedIndex].getAttribute('data-lat');
+    let selectedLon = citySelect.options[citySelect.selectedIndex].getAttribute('data-lon');
+
+    citySelect.addEventListener('change', () => {
+      const selectedOption = citySelect.options[citySelect.selectedIndex];
+      selectedLat = selectedOption.getAttribute('data-lat');
+      selectedLon = selectedOption.getAttribute('data-lon');
+      fetchWeatherWithCoordinates(selectedLat, selectedLon).then(applyWeather);
+    });
+
+    // --- New function for lat/lon ---
+    async function fetchWeatherWithCoordinates(lat, lon) {
+      console.log('Fetching weather for:', lat, lon);
+      try {
+        const url = lat && lon
+          ? `http://localhost:5173/weatherLatLon?lat=${lat}&lon=${lon}`
+          : 'http://localhost:5173/weather';
+        const res = await fetch(url);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        console.error('Weather fetch error:', e);
+        return null;
+      }
+    }
+
+    // --- Keep the original fetchWeather for default usage ---
     async function fetchWeather() {
       try {
         const res = await fetch('http://localhost:5173/weather');
@@ -257,13 +293,15 @@
       updateSky();
     }
 
-    // Call after scene setup
-    fetchWeather().then(applyWeather);
-
-    // Set up periodic weather updates
-    setInterval(() => {
+    // On page load, fetch weather for the default city
+    window.addEventListener('DOMContentLoaded', () => {
       fetchWeather().then(applyWeather);
-    }, 300000); // Update every 5 minutes
+    });
+
+    // Update periodic weather update to use selected city
+    setInterval(() => {
+      fetchWeatherWithCoordinates(selectedLat, selectedLon).then(applyWeather);
+    }, 300000); // 5 minutes
 
     // Animation loop
     function animate() {

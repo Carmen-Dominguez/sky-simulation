@@ -29,13 +29,28 @@ export default class WeatherDisplay {
     this.container.style.color = isNight ? '#fff' : '#222';
   }
 
+  getLocalTime(timezoneOffset) {
+    // timezoneOffset is in seconds
+    const now = new Date();
+    // Convert local time to UTC, then add the offset
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const local = new Date(utc + (timezoneOffset * 1000));
+    // Format as HH:MM (24h)
+    return local.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
   update(weather) {
     if (!weather) {
       this.container.innerHTML = '<b>Weather data unavailable</b>';
       return;
     }
+    const timezoneOffset = weather.timezone || 0;
+
+    const localTime = this.getLocalTime(timezoneOffset);
+
     this.container.innerHTML = `
       <b>${weather.name}, ${weather.sys?.country || ''}</b><br>
+      <b>Local time:</b> ${localTime}<br>
       <b>${weather.weather[0].main}</b> (${weather.weather[0].description})<br>
       <b>Temp:</b> ${weather.main.temp}°C (feels like ${weather.main.feels_like}°C)<br>
       <b>Clouds:</b> ${weather.clouds.all}%<br>
