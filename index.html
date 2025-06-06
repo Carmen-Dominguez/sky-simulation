@@ -67,6 +67,16 @@
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     ">Rain: 9.72mm</button>
+    <button id="wind-btn" style="
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.8);
+      color: #222;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">Wind: 1.5m/s</button>
   </div>
 
   <script type="module">
@@ -200,6 +210,8 @@
     let currentCloudIndex = 3; // Start at 75%
     let currentRainIndex = 3; // Start at 7.5mm
     let isManualControl = false;
+    let currentWindIndex = 0;
+    const windLevels = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32];
 
     document.getElementById('cloud-btn').addEventListener('click', () => {
       isManualControl = true;
@@ -217,6 +229,14 @@
       const rainIntensity = rainLevels[currentRainIndex];
       rainSystem.setRainIntensity(rainIntensity);
       document.getElementById('rain-btn').textContent = `Rain: ${rainIntensity}mm`;
+    });
+
+    document.getElementById('wind-btn').addEventListener('click', () => {
+      isManualControl = true;
+      currentWindIndex = (currentWindIndex + 1) % windLevels.length;
+      const windIntensity = windLevels[currentWindIndex];
+      cloudSystem.setCloudSpeedFromWind(windIntensity);
+      document.getElementById('wind-btn').textContent = `Wind: ${windIntensity}m/s`;
     });
 
     // --- City selection logic ---
@@ -286,6 +306,12 @@
         const rainIntensity = weather.rain ? weather.rain['1h'] || weather.rain['3h'] || 0 : 0;
         rainSystem.setRainIntensity(rainIntensity);
         document.getElementById('rain-btn').textContent = `Rain: ${rainIntensity}mm`;
+      }
+
+      if (!isManualControl) {
+        const windIntensity = weather.wind?.speed;
+        cloudSystem.setCloudSpeedFromWind(windIntensity);
+        document.getElementById('wind-btn').textContent = `Wind: ${windIntensity}m/s`;
       }
 
       // 4. Show weather info

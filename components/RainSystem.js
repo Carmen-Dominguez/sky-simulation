@@ -36,7 +36,7 @@ class RainSystem {
             const material = new THREE.LineBasicMaterial({
                 color: 0xaaaaaa,
                 transparent: true,
-                opacity: 0.6
+                opacity: 0.8
             });
 
             // Create the line and add it to the groupf
