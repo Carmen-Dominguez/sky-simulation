@@ -17,20 +17,45 @@
     pointer-events: none;
     transition: background 1s;
   "></div>
-  <button id="time-btn" style="
+  <div style="
     position: fixed;
     bottom: 20px;
     left: 20px;
     z-index: 10;
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: none;
-    background: rgba(255,255,255,0.8);
-    color: #222;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  ">Change Time</button>
+    display: flex;
+    gap: 10px;
+  ">
+    <button id="time-btn" style="
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.8);
+      color: #222;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">Change Time</button>
+    <button id="cloud-btn" style="
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.8);
+      color: #222;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">Clouds: 75%</button>
+    <button id="rain-btn" style="
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.8);
+      color: #222;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">Rain: 9.72mm</button>
+  </div>
 
   <script type="module">
     import * as THREE from './three.module.js';
@@ -157,6 +182,31 @@
     });
     updateSky();
 
+    // Weather control logic
+    const cloudLevels = [0, 25, 50, 75, 100];
+    const rainLevels = [0, 2.5, 5, 7.5, 10];
+    let currentCloudIndex = 3; // Start at 75%
+    let currentRainIndex = 3; // Start at 7.5mm
+    let isManualControl = false;
+
+    document.getElementById('cloud-btn').addEventListener('click', () => {
+      isManualControl = true;
+      currentCloudIndex = (currentCloudIndex + 1) % cloudLevels.length;
+      const cloudiness = cloudLevels[currentCloudIndex];
+      currentCloudiness = cloudiness;
+      cloudSystem.setCloudDensity(cloudiness);
+      document.getElementById('cloud-btn').textContent = `Clouds: ${cloudiness}%`;
+      updateSky();
+    });
+
+    document.getElementById('rain-btn').addEventListener('click', () => {
+      isManualControl = true;
+      currentRainIndex = (currentRainIndex + 1) % rainLevels.length;
+      const rainIntensity = rainLevels[currentRainIndex];
+      rainSystem.setRainIntensity(rainIntensity);
+      document.getElementById('rain-btn').textContent = `Rain: ${rainIntensity}mm`;
+    });
+
     // Fetch weather data and apply to scene
     async function fetchWeather() {
       try {
@@ -185,14 +235,20 @@
 
       currentTimeIndex = times.indexOf(timeOfDay);
       
-      // 2. Set cloud density
-      const cloudiness = weather.clouds?.all || 0; // Safely access cloud coverage
-      currentCloudiness = cloudiness;
-      cloudSystem.setCloudDensity(cloudiness);
+      // 2. Set cloud density (only if not in manual control)
+      if (!isManualControl) {
+        const cloudiness = weather.clouds?.all || 0;
+        currentCloudiness = cloudiness;
+        cloudSystem.setCloudDensity(cloudiness);
+        document.getElementById('cloud-btn').textContent = `Clouds: ${cloudiness}%`;
+      }
 
-      // 3. Set rain intensity based on weather condition
-      const rainIntensity = weather.rain ? weather.rain['1h'] || weather.rain['3h'] || 0 : 0;
-      rainSystem.setRainIntensity(rainIntensity);
+      // 3. Set rain intensity (only if not in manual control)
+      if (!isManualControl) {
+        const rainIntensity = weather.rain ? weather.rain['1h'] || weather.rain['3h'] || 0 : 0;
+        rainSystem.setRainIntensity(rainIntensity);
+        document.getElementById('rain-btn').textContent = `Rain: ${rainIntensity}mm`;
+      }
 
       // 4. Show weather info
       weatherDisplay.update(weather);
@@ -203,6 +259,11 @@
 
     // Call after scene setup
     fetchWeather().then(applyWeather);
+
+    // Set up periodic weather updates
+    setInterval(() => {
+      fetchWeather().then(applyWeather);
+    }, 300000); // Update every 5 minutes
 
     // Animation loop
     function animate() {

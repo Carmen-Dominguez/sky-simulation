@@ -29,20 +29,28 @@ class CloudSystem {
 
     setCloudColor(color, opacity) {
         this.clouds.children.forEach(cloudGroup => {
-            cloudGroup.children.forEach(sphere => {
-                sphere.material.color.setHex(color);
-                sphere.material.opacity = opacity;
+            cloudGroup.children.forEach(puffGroup => {
+                puffGroup.children.forEach(plane => {
+                    if (plane.material) {
+                        plane.material.color.setHex(color);
+                        plane.material.opacity = opacity;
+                    }
+                });
             });
         });
     }
 
     setCloudColorLayered(layerColors) {
         this.clouds.children.forEach(cloudGroup => {
-            cloudGroup.children.forEach(sphere => {
-                const layer = sphere.userData.layer || 'back';
+            cloudGroup.children.forEach(puffGroup => {
+                const layer = puffGroup.userData.layer || 'back';
                 const { color, opacity } = layerColors[layer];
-                sphere.material.color.setHex(color);
-                sphere.material.opacity = opacity;
+                puffGroup.children.forEach(plane => {
+                    if (plane.material) {
+                        plane.material.color.setHex(color);
+                        plane.material.opacity = opacity;
+                    }
+                });
             });
         });
     }
